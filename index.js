@@ -16,11 +16,13 @@ var socket_list = {};
 var player_list = {};
 
 
-var Player = function(id){
+var Player = function(id,name,color){
 	var self = {
 		x:250,
 		y:250,
 		id:id,
+		name:name,
+		color:color,
 		number: "" + Math.floor(10 * Math.random()),
 		pressingLeft: false,
 		pressingRight: false,
@@ -52,11 +54,18 @@ var io = require('socket.io')(serv,{});
 
 io.sockets.on('connection',function(socket){
 	console.log('New connection');
-	socket.id = Math.random();
-	socket_list[socket.id] = socket;
+	
+	var player = null;
 
-	var player = Player(socket.id);
-	player_list[socket.id] = player;
+
+	socket.on('started',function(data){
+		socket.id = Math.random();
+		socket_list[socket.id] = socket;
+
+		player = Player(socket.id, data.pname, data.pcolor);
+		player_list[socket.id] = player;
+
+	});
 
 	socket.on('disconnect',function(){
 		delete socket_list[socket.id];
@@ -91,6 +100,8 @@ setInterval(function(){
 		pack.push({
 			x:player.x,
 			y:player.y,
+			name:player.name,
+			color:player.color,
 			number:player.number
 		});
 	}

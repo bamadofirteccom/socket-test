@@ -4,23 +4,41 @@
 
 
 <script>
+	var started = false;
+
 	var ctx = document.getElementById("ctx").getContext("2d");
 	ctx.font = '30px Arial';
 
 	var socket = io();
 
-	socket.on('newPositions', function(data){
+
+	//Iniciando el juego:
+	//Pidiendo  valores de jugador:
+	var pname = window.prompt('Ingresa tu nombre');
+	var pcolor = window.prompt('Ingresa tu color');
+
+	if(pname!=null && pcolor != null){
+
+		socket.emit('started', {pname: pname, pcolor:pcolor});
+		started = true;
+	}
+
+
+
+
+	if(started){
+		socket.on('newPositions', function(data){
 		ctx.clearRect(0,0,500,500);
 
 		for(var i= 0; i < data.length; i++){
-			ctx.fillText(data[i].number,data[i].x,data[i].y);
+			ctx.fillStyle = data[i].color;
+			ctx.fillText(data[i].name,data[i].x,data[i].y);
 		}
 
 	});
 
 
 	document.onkeydown = function(event){
-		console.log(event.keyCode);
 		if(event.keyCode === 68){ //d
 			socket.emit('keyPress', {inputId:'right', state:true});
 		}
@@ -49,6 +67,7 @@
 		else if(event.keyCode === 87){ //w
 			socket.emit('keyPress', {inputId:'up', state:false});
 		}
+	}
 	}
 
 </script>
